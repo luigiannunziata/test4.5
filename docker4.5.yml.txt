@@ -1,0 +1,37 @@
+---
+- hosts: oscompute
+  gather_facts: false
+  vars_files:
+  - user-vars.yml
+
+  tasks:
+    - name: Remove old Docker
+      action: shell yum -y remove docker docker-common container-selinux docker-selinux docker-engine
+
+    - name: Add new repo for docker
+      action: shell yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+    - name: Install docker
+      yum: name={{ item }}
+      with_items:
+      - docker-ce
+      - python-docker-py
+      - wget
+
+    - name: Create temporary directory
+      file: path=/tmp/nuage-docker-mon state=directory mode=0755
+
+
+    - name: Download Docker 4.5 in TMP
+      action: shell wget  -P /tmp/nuage-docker-mon/  https://www.dropbox.com/s/vd97o39x8jyqjg0/nuage-docker-monitor-4.0.5-60.el7.x86_64.rpm
+
+    - name: Install Nuage Docker Monitor 4.5
+      yum: name="/tmp/nuage-docker-mon/nuage-docker-monitor-4.0.5-60.el7.x86_64.rpm"
+      notify:
+       - Restart Nuage Openvswitch
+
+  handlers:
+  - name: Restart Nuage Openvswitch
+    service: name=openvswitch state=restarted
+
+
