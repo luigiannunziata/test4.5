@@ -1,5 +1,5 @@
 ---
-- hosts: oscompute
+- hosts: osc11
   gather_facts: false
   vars_files:
   - user-vars.yml
